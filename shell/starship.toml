@@ -1,0 +1,61 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+$directory \
+$python\
+$fill\
+$git_state  [on $git_branch](fg:color_grey) $git_status\
+$line_break$character"""
+
+continuation_prompt = "· "
+
+palette = 'monokai'
+
+[palettes.monokai]
+color_fg0 = '#F8F8F2'  # normal 
+color_bg0 = '#232126'
+color_red = '#F92672'
+color_orange = '#ff9767'
+color_yellow = '#E6DB74'
+color_green = '#A6E22E'
+color_blue = '#66D9EF'
+color_purple = '#AE81FF'
+color_grey = '#454545'
+
+[fill]
+symbol = ' '
+
+[directory]
+style = "bold fg:color_blue"
+format = "[[ $read_only](fg:color_red) $path/ ]($style)"
+fish_style_pwd_dir_length = 0
+truncation_length = 5
+truncation_symbol = "…/"
+truncate_to_repo = false
+read_only= ''
+
+[git_state]
+format = '[](fg:color_yellow)[  $state( $progress_current/$progress_total)  ](fg:color_bg0 bg:color_yellow)[](fg:color_yellow)'
+
+[git_branch]
+symbol = ''
+format = '$symbol $branch'
+
+[git_status]
+format = ' $staged$modified$renamed$deleted [(\[ $ahead_behind \])](fg:color_yellow)'
+ahead   = '⇡${count} ⇣0'
+behind  = '⇡0 ⇣${count}'
+diverged = '⇡${ahead_count} ⇣${behind_count}'
+up_to_date = ''
+modified = '[󰦒$count ](fg:color_orange)'
+staged = '[+$count ](fg:color_green)'
+renamed = '[➜$count ](fg:color_blue)'
+deleted = '[⨯$count ](fg:color_red)'
+
+[python]
+format = '([](fg:color_grey)[$virtualenv](bg:color_grey fg:color_bg0)[](fg:color_grey))'
+
+[character]
+disabled = false
+success_symbol = '[ ❯](bold fg:color_blue)'
+error_symbol = '[ ❯](bold fg:color_blue)'

@@ -1,0 +1,84 @@
+{
+    "workbench.iconTheme": "vscode-icons",
+    "workbench.colorTheme": "Monokai Pro (Filter Machine)",
+    "workbench.colorCustomizations": {
+        "[Monokai Pro (Filter Machine)]": {
+            // "tab.activeBorder": "#273136",
+            // "tab.activeForeground": "#ffffff",
+            "tab.activeBackground": "#343e43",
+            // "tab.inactiveForeground": "#1d2528",
+            // "tab.border": "#161b1e",
+            // "editorGroupHeader.tabsBackground": "#1d2528",
+        }
+    },
+
+    "editor.fontFamily": "'RobotoMono Nerd Font Mono', Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontSize": 15,
+    "editor.copyWithSyntaxHighlighting": false,
+    // "ShortcutMenuBar.openFilesList": false,
+    // "security.workspace.trust.untrustedFiles": "open",
+    "editor.scrollbar.verticalScrollbarSize": 20,
+    "editor.scrollbar.horizontalScrollbarSize": 20,
+    "explorer.confirmDragAndDrop": false,
+
+    "files.exclude": {
+        "**/__pycache__/**": true,
+        ".idea/**": true,
+        ".pytest_cache/**": true,
+        "**/.venv/**": true,
+        "node_modules/**": true,
+        "**/.ruff_cache/**": true,
+        ".pnpm-store/**": true,
+    },
+    "explorer.excludeGitIgnore": true,
+
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit"
+    },
+    "files.trimTrailingWhitespace": true,
+
+    "keyboard.layout": "com.apple.keylayout.British",
+
+    "workbench.startupEditor": "none",
+
+    "workbench.tree.renderIndentGuides": "always",  
+    "workbench.tree.indent": 20,
+    "explorer.confirmPasteNative": false,
+    "chat.commandCenter.enabled": false,
+
+    "workbench.editor.pinnedTabsOnSeparateRow": true,
+    "workbench.editor.wrapTabs": true,
+
+    "terminal.integrated.cursorStyle": "line",
+    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.defaultProfile.linux": "fish",
+    "terminal.integrated.fontFamily": "'RobotoMono Nerd Font Mono'",
+
+    "[code-runner-output]": {
+        "editor.fontSize": 12
+    },
+    "[log]": {
+        // "Output" window
+        "editor.fontSize": 12
+    },
+    "[Log]": {
+        // "Output" window
+        "editor.fontSize": 12
+    },
+
+    "ShortcutMenuBar.userButton01Command": "git-graph.view",
+
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticMode": "workspace",
+    
+
+    "[sql]": {
+        "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
+    },
+
+    "aws.telemetry": false,
+    "redhat.telemetry.enabled": false
+}
