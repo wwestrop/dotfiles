@@ -50,6 +50,8 @@
     "workbench.editor.pinnedTabsOnSeparateRow": true,
     "workbench.editor.wrapTabs": true,
 
+    "workbench.secondarySidebar.defaultVisibility": "hidden",
+
     "terminal.integrated.cursorStyle": "line",
     "terminal.integrated.fontSize": 12,
     "terminal.integrated.defaultProfile.linux": "fish",
