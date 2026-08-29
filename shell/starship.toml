@@ -4,7 +4,7 @@ format = """
 $directory \
 $python\
 $fill\
-$git_state  [on $git_branch](fg:color_grey) $git_status\
+$git_state  [$git_branch](fg:color_grey) $git_status\
 $line_break$character"""
 
 continuation_prompt = "· "
@@ -39,7 +39,7 @@ format = '[](fg:color_yellow)[  $state( $progress_current/$progress_total)  ]
 
 [git_branch]
 symbol = ''
-format = '$symbol $branch'
+format = 'on $symbol $branch'
 
 [git_status]
 format = ' $staged$modified$renamed$deleted [(\[ $ahead_behind \])](fg:color_yellow)'
