@@ -26,6 +26,8 @@ alias python=python3
 alias tf=terraform
 alias npm=pnpm
 alias npx=pnpx
+alias grep="grep --color=always"
+alias less="less -r"
 # alias start="nohup dolphin &"
 
 function start() {
