@@ -26,6 +26,8 @@ alias python=python3
 alias tf=terraform
 alias npm=pnpm
 alias npx=pnpx
+alias dr="dotnet run"
+alias dt="dotnet test"
 alias grep="grep --color=always"
 alias less="less -r"
 # alias start="nohup dolphin &"
@@ -36,6 +38,10 @@ function start() {
   else
     nohup dolphin $1 >/dev/null 2>&1 &
   fi
+}
+
+function cdr() {
+  cd "$(git rev-parse --show-toplevel)"
 }
 
 
@@ -54,6 +60,14 @@ bindkey "^[[1;5D" backward-word
 # Ctrl-right
 bindkey "^[[1;5C" forward-word
 
+# bindkey "^b" backward-word        # remapped from cmd ← / cmd →   in iTerm
+# bindkey "^n" forward-word         # the rest can be rebound directly in iTerm as below:
+# Hex 0x15    Esc
+# Hex 0x17    cmd+backspace
+# Hex 0x02    cmd+left
+# Hex 0x0e    cmd+right
+# Hex 0x01    home
+# Hex 0x05    end
 
 
 
