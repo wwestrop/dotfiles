@@ -1,3 +1,5 @@
+export PATH=~/.zsh/scripts:$PATH
+
 
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'     # case insensitive tab completion
 setopt nocaseglob                                                                     # case insensitive globbing
@@ -31,6 +33,8 @@ alias dt="dotnet test"
 alias grep="grep --color=always"
 alias less="less -r"
 # alias start="nohup dolphin &"
+alias gcd="(git checkout develop || git checkout main || git checkout master) && git fetch"
+
 
 function start() {
   if [ "$1" = "" ]; then
