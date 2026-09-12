@@ -1,0 +1,93 @@
+# Quickly switch git branches, including those on the server but not pulled locally
+# List last 5 distinct branches, or search by substring including remotes, or toggle to last used branch
+gb() {
+    emulate -L zsh
+    setopt local_options no_nomatch
+
+    local -a branches is_remote local_branches remote_branches
+    local query b choice i
+
+    if [[ $# -gt 0 && $1 == "-" ]]; then
+        # "gb -" switches to the last used branch
+        branches=(${(f)"$(git reflog | grep 'checkout: moving' | grep -oE 'to [^ ]+$' | sed 's/^to //' | awk '!seen[$0]++' | head -2)"})
+
+        if (( ${#branches} < 2 )); then
+            echo "No previous branch found."
+            return 1
+        fi
+
+        git checkout $branches[2]
+        return
+
+    elif [[ $# -gt 0 ]]; then
+        query=$1
+
+        echo "Fetching remotes..."
+        git fetch --all -q
+
+        local_branches=(${(f)"$(git branch | sed 's/^[* ]*//' | grep -i -- $query)"})
+        remote_branches=(${(f)"$(git branch -r | sed 's/^[* ]*//' | grep -v ' -> ' | grep -i -- $query | sed 's|origin/||')"})
+
+        # Combine, deduplicating remotes that already exist locally
+        for b in $local_branches; do
+            branches+=($b)
+            is_remote+=(0)
+        doneq
+
+        for b in $remote_branches; do
+            if (( ! ${local_branches[(Ie)$b]} )); then
+                branches+=($b)
+                is_remote+=(1)
+            fi
+        done
+
+        if (( ${#branches} == 0 )); then
+            echo "No branches found matching '$query'."
+            return 1
+        fi
+
+        if (( ${#branches} == 1 )); then
+            git checkout $branches[1]
+            return
+        fi
+
+        for i in {1..${#branches}}; do
+            if (( is_remote[i] == 1 )); then
+                print -Pn -- "  $i) $branches[i] ("
+                print -Pn -- "%B%F{red}remote%f%b"
+                print -P -- ")"
+            else
+                echo "  $i) $branches[i]"
+            fi
+        done
+
+    else
+        branches=(${(f)"$(git reflog | grep 'checkout: moving' | grep -oE 'to [^ ]+$' | sed 's/^to //' | awk '!seen[$0]++' | head -5)"})
+
+        if (( ${#branches} == 0 )); then
+            echo "No recent branches found."
+            return 1
+        fi
+
+        for i in {1..${#branches}}; do
+            echo "  $i) $branches[i]"
+        done
+    fi
+
+    echo ""
+    read -k 1 "choice?Switch to branch (number, or Enter to cancel): "
+    echo ""
+
+    # -k 1 returns the raw keypress, so Enter arrives as a newline rather than empty
+    choice=${choice//[$'\n\r']/}
+    if [[ -z $choice ]]; then
+        return 0
+    fi
+
+    if [[ $choice == <-> ]] && (( choice >= 1 && choice <= ${#branches} )); then
+        git checkout $branches[choice]
+    else
+        echo "Invalid selection."
+        return 1
+    fi
+}

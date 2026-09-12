@@ -34,6 +34,7 @@ alias grep="grep --color=always"
 alias less="less -r"
 # alias start="nohup dolphin &"
 alias gcd="(git checkout develop || git checkout main || git checkout master) && git fetch"
+alias grd="gcd && gb - && (git rebase develop || git rebase main || git rebase master)"
 
 
 function start() {
