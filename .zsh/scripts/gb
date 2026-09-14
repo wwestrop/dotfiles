@@ -1,93 +1,188 @@
-# Quickly switch git branches, including those on the server but not pulled locally
-# List last 5 distinct branches, or search by substring including remotes, or toggle to last used branch
-gb() {
-    emulate -L zsh
-    setopt local_options no_nomatch
+#!/usr/bin/env python3
 
-    local -a branches is_remote local_branches remote_branches
-    local query b choice i
+import re
+import subprocess
+import sys
 
-    if [[ $# -gt 0 && $1 == "-" ]]; then
-        # "gb -" switches to the last used branch
-        branches=(${(f)"$(git reflog | grep 'checkout: moving' | grep -oE 'to [^ ]+$' | sed 's/^to //' | awk '!seen[$0]++' | head -2)"})
 
-        if (( ${#branches} < 2 )); then
-            echo "No previous branch found."
-            return 1
-        fi
+def git(*args):
+    return subprocess.run(
+        ["git", *args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
 
-        git checkout $branches[2]
-        return
 
-    elif [[ $# -gt 0 ]]; then
-        query=$1
+def recent_branches(limit):
+    result = git("reflog", "--format=%gs")
 
-        echo "Fetching remotes..."
-        git fetch --all -q
+    if result.returncode != 0:
+        print(result.stderr, end="")
+        return []
 
-        local_branches=(${(f)"$(git branch | sed 's/^[* ]*//' | grep -i -- $query)"})
-        remote_branches=(${(f)"$(git branch -r | sed 's/^[* ]*//' | grep -v ' -> ' | grep -i -- $query | sed 's|origin/||')"})
+    branches = []
 
-        # Combine, deduplicating remotes that already exist locally
-        for b in $local_branches; do
-            branches+=($b)
-            is_remote+=(0)
-        doneq
+    for line in result.stdout.splitlines():
+        match = re.search(r"checkout: moving .* to (.+)$", line)
+        if match:
+            branch = match.group(1)
+            if branch not in branches:
+                branches.append(branch)
 
-        for b in $remote_branches; do
-            if (( ! ${local_branches[(Ie)$b]} )); then
-                branches+=($b)
-                is_remote+=(1)
-            fi
-        done
+        if len(branches) == limit:
+            break
 
-        if (( ${#branches} == 0 )); then
-            echo "No branches found matching '$query'."
-            return 1
-        fi
+    return branches
 
-        if (( ${#branches} == 1 )); then
-            git checkout $branches[1]
-            return
-        fi
 
-        for i in {1..${#branches}}; do
-            if (( is_remote[i] == 1 )); then
-                print -Pn -- "  $i) $branches[i] ("
-                print -Pn -- "%B%F{red}remote%f%b"
-                print -P -- ")"
-            else
-                echo "  $i) $branches[i]"
-            fi
-        done
+def checkout(branch):
+    result = git("checkout", branch)
 
-    else
-        branches=(${(f)"$(git reflog | grep 'checkout: moving' | grep -oE 'to [^ ]+$' | sed 's/^to //' | awk '!seen[$0]++' | head -5)"})
+    if result.returncode != 0:
+        print(result.stderr, end="")
+        return result.returncode
 
-        if (( ${#branches} == 0 )); then
-            echo "No recent branches found."
-            return 1
-        fi
+    return 0
 
-        for i in {1..${#branches}}; do
-            echo "  $i) $branches[i]"
-        done
-    fi
 
-    echo ""
-    read -k 1 "choice?Switch to branch (number, or Enter to cancel): "
-    echo ""
+def choose(branches, remote_flags):
+    for i, (branch, is_remote) in enumerate(
+        zip(branches, remote_flags), start=1
+    ):
+        suffix = " (remote)" if is_remote else ""
+        print(f"  {i}) {branch}{suffix}")
 
-    # -k 1 returns the raw keypress, so Enter arrives as a newline rather than empty
-    choice=${choice//[$'\n\r']/}
-    if [[ -z $choice ]]; then
+    print()
+    print("Switch to branch (number, or Esc to cancel): ", end="", flush=True)
+
+    import sys
+    import termios
+    import tty
+
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+
+    try:
+        tty.setraw(fd)
+        key = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+    print()
+
+    if key == "\x1b":  # Escape
         return 0
-    fi
 
-    if [[ $choice == <-> ]] && (( choice >= 1 && choice <= ${#branches} )); then
-        git checkout $branches[choice]
-    else
-        echo "Invalid selection."
+    if not key.isdigit():
+        print("Invalid selection.")
         return 1
-    fi
-}
+
+    index = int(key) - 1
+
+    if not 0 <= index < len(branches):
+        print("Invalid selection.")
+        return 1
+
+    return checkout(branches[index])
+
+def switch_last():
+    branches = recent_branches(2)
+
+    if len(branches) < 2:
+        print("No previous branch found.")
+        return 1
+
+    return checkout(branches[1])
+
+
+def switch_or_search(query):
+    print("Fetching remotes...")
+    result = git("fetch", "--all", "-q")
+
+    if result.returncode != 0:
+        print(result.stderr, end="")
+        return result.returncode
+
+    query_lower = query.lower()
+
+    # git branch --format avoids parsing the decorative "* main" output.
+    result = git("branch", "--format=%(refname:short)")
+
+    if result.returncode != 0:
+        print(result.stderr, end="")
+        return result.returncode
+
+    local = [
+        branch
+        for branch in result.stdout.splitlines()
+        if query_lower in branch.lower()
+    ]
+
+    result = git(
+        "branch",
+        "-r",
+        "--format=%(refname:short)",
+    )
+
+    if result.returncode != 0:
+        print(result.stderr, end="")
+        return result.returncode
+
+    remote = [
+        branch.removeprefix("origin/")
+        for branch in result.stdout.splitlines()
+        if " -> " not in branch
+        and query_lower in branch.lower()
+    ]
+
+    branches = [(branch, False) for branch in local]
+
+    local_set = set(local)
+
+    branches.extend(
+        (branch, True)
+        for branch in remote
+        if branch not in local_set
+    )
+
+    if not branches:
+        print(f"No branches found matching '{query}'.")
+        return 1
+
+    if len(branches) == 1:
+        branch, is_remote = branches[0]
+
+        if is_remote:
+            # Equivalent to `git checkout branch`, which creates a
+            # tracking branch when origin/branch exists.
+            return checkout(branch)
+
+        return checkout(branch)
+
+    return choose(
+        [branch for branch, _ in branches],
+        [is_remote for _, is_remote in branches],
+    )
+
+
+def main():
+    args = sys.argv[1:]
+
+    if args and args[0] == "-":
+        return switch_last()
+
+    if args:
+        return switch_or_search(args[0])
+
+    branches = recent_branches(5)
+
+    if not branches:
+        print("No recent branches found.")
+        return 1
+
+    return choose(branches, [False] * len(branches))
+
+
+if __name__ == "__main__":
+    sys.exit(main())
