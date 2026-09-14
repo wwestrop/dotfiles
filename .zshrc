@@ -1,4 +1,5 @@
 export PATH=~/.zsh/scripts:$PATH
+export EDITOR=nano
 
 
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'     # case insensitive tab completion
