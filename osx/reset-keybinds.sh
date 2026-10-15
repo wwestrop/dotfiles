@@ -4,6 +4,7 @@ defaults write -g NSUserKeyEquivalents "Hide Google Chrome" "@~^$h"
 defaults write -g NSUserKeyEquivalents "Hide JetBrains Rider" "@~^$h"
 defaults write -g NSUserKeyEquivalents "Hide Visual Studio Code" "@~^$h"
 defaults write -g NSUserKeyEquivalents "Redo" "@y"
+defaults write -g NSUserKeyEquivalents "Lock Screen" "^L"
 
 
 # Chrome
